@@ -101,17 +101,6 @@ COPY jenkins.sh /usr/local/bin/jenkins.sh
 COPY tini-shim.sh /bin/tini
 COPY jenkins-plugin-cli.sh /bin/jenkins-plugin-cli
 
-# set variables to create shared class cache
-ENV JAVA_SCC_OPTS "-Xshareclasses:name=jenkins_scc,cacheDir=/tmp,enableBCI -Xscmx80M"
-ENV JAVA_OLD_OPTS ${JAVA_OPTS}
-ENV JAVA_OPTS "${JAVA_SCC_OPTS} ${JAVA_OPTS}"
-
-# create shared class cache
-RUN /sbin/tini -- /usr/local/bin/jenkins.sh > /dev/null & sleep 20
-
-# revert JAVA_OPTS to not have shared class cache
-ENV JAVA_SCC_OPTS "-Xshareclasses:name=jenkins_scc,cacheDir=/tmp,readonly"
-ENV JAVA_OPTS "${JAVA_SCC_OPTS} ${JAVA_OLD_OPTS}"
 ENTRYPOINT ["/sbin/tini", "--", "/usr/local/bin/jenkins.sh"]
 
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup ${REF}/plugins from a support bundle
